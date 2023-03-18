@@ -1,0 +1,28 @@
+
+name: Ubuntu RDP
+
+on: [workflow_dispatch]
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Installing neccesary packages
+        run: sudo apt update -y && sudo apt install ufw xrdp ubuntu-desktop -y; gsettings set org.gnome.desktop.interface enable-animations false ;sudo sed -i 's/max_bpp=32/max_bpp=16/g' /etc/xrdp/xrdp.ini ;sudo systemctl set-default graphical.target ;sudo systemctl start xrdp
+      
+      - name: Ngrok Installation
+        run: curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok;
+ 
+      - name: Ngrok Auth
+        run: ngrok config add-authtoken ${{ secrets.2MrYCRq6y6cuYo6cfkKCDD2ZfbF_3tKujJ8oEgM3Cx7u59vUJ}}
+
+      - name: Configure Firewall
+        run: sudo ufw allow 3389/tcp
+
+      - name: Configure Users
+        run: echo "runner:toor" | sudo chpasswd ; echo "runneradmin:toor" | sudo chpasswd
+        
+      - name: Starting Ngrok
+        run: ngrok tcp 3389
+
+      
